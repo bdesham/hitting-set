@@ -26,7 +26,7 @@ Before we go into the relationship between these two problems let’s talk about
  "United States" #{:white :red :blue}}
 ```
 
-Here I have used strings for the keys and keywords for the elements of the sets, but you can use strings, keywords, or pretty much any other non-sequence data type for the edges or for the vertices.
+Here I have used strings for the keys and keywords for the elements of the sets, but you can use strings, keywords, or pretty much any other non-sequence data type for the edges or for the vertices. (Using a separate data type for the two may make things easier if you’re going to be inverting (q.v.) your graphs a lot.)
 
 ---
 
@@ -45,7 +45,7 @@ Hopefully this example has made our hypergraphs a little easier to visualize. No
  :yellow #{"Tanzania" "Uruguay" "Saint Vincent and the Grenadines"}}
 ```
 
-Note that this is still a perfectly valid hypergraph! The relationship between the hitting set and the set cover is that the hitting set of the first hypergraph above is a set cover for the second set, and vice versa. Inverting a hypergraph is easy and fast, so depending upon the situation, finding the hitting set may be easiest by inverting the hypergraph and then finding the set cover.
+Note that what we have done is to convert a hypergraph into another bona fide hypergraph that contains the same information in a different form. The relationship between the hitting set and the set cover is that the hitting set of the first hypergraph above is a set cover for the second set, and vice versa. Inverting a hypergraph is easy and fast, so depending upon the situation, finding the hitting set may be easiest by inverting the hypergraph and then finding the set cover.
 
 ## Usage
 
@@ -92,17 +92,17 @@ Following are descriptions of the “end-user” functions in the library.
 
 * `greedy-cover [h]`
 
-    Uses the “greedy” algorithm (described [at Wikipedia](http://en.wikipedia.org/wiki/Set_cover_problem#Greedy_algorithm)) to generate a set cover for `h`.
+    Uses the “greedy” algorithm (described [at Wikipedia](http://en.wikipedia.org/wiki/Set_cover_problem#Greedy_algorithm)) to generate a set cover for `h`. The cover returned is not necessarily minimal.
 
 ## Caveats
 
 * Due to limitations in the algorithms in this library, you may experience the following oddities:
 
-  1. `hitting-set-exists?` will correctly return `false` if you pass it a size `k` below that of the minimal hitting set, and it will correctly return `true` when you pass it a `k` that is equal to the size of the minimal hitting set. However, it may return `false` for larger values of `k`, even when the values are less than the number of vertices in the hypergraph. (Recall that if the minimal hitting set has size *a* and there are a total of *c* vertices in the hypergraph, then we can form a hitting set of any size *k* between *a* and *c*, inclusive, by adding elements to the minimal hitting set. The resulting set will still have the hitting set property that it has a nonempty intersection with each hyperedge, and so it will still be a hitting set.)
+      1. `hitting-set-exists?` will correctly return `false` if you pass it a size `k` below that of the minimal hitting set, and it will correctly return `true` when you pass it a `k` that is equal to the size of the minimal hitting set. However, it may return `false` for larger values of `k`, even when the values are less than the number of vertices in the hypergraph. (Recall that if the minimal hitting set has size *a* and there are a total of *c* vertices in the hypergraph, then we can form a hitting set of any size *k* between *a* and *c*, inclusive, by adding elements to the minimal hitting set. The resulting set will still have the hitting set property that it has a nonempty intersection with each hyperedge, and so it will still be a hitting set.)
 
-  2. `enumerate-hitting-sets` has a similar problem: It will always (correctly) return all possible *minimal* hitting sets, but it may not return hitting sets that are larger than minimal.
+      2. `enumerate-hitting-sets` has a similar problem: It will always (correctly) return all possible *minimal* hitting sets, but it may not return hitting sets that are larger than minimal.
 
-  I intend to fix both of these issues in a future version of the library. Note that if you’re only looking for *minimal* hitting sets then neither of these oddities is an issue.
+      I intend to fix both of these issues in a future version of the library. Note that if you’re only looking for *minimal* hitting sets then neither of these oddities is an issue.
 
 * The functions `hitting-set-exists?` and `enumerate-hitting-sets` (and by extension `minimal-hitting-sets`) are recursive but do not make use of Clojure’s `recur` and friends. This opens the possibility of a stack overflow. In practice, though, the recursion goes no deeper than `k` levels, where `k` is the maximum edge size. Since the hitting set problem is NP-complete, the computation for small edge sizes will take so long that you’ll give up (or run out of heap) long before the stack fills up.
 
