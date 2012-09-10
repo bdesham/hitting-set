@@ -18,7 +18,7 @@
   [f coll]
   (map #(vector % (f %)) coll))
 
-(defn- vertices
+(defn- count-vertices
   "Returns the number of vertices in the hypergraph h."
   [h]
   (count (apply union (vals h))))
@@ -55,6 +55,28 @@
   [h]
   (-> h remove-dupes sorted-hypergraph))
 
+(defn- largest-edge
+  "Returns the name of the edge of h that has the greatest number of vertices."
+  [h]
+  (first (last (sorted-hypergraph h))))
+
+(defn- remove-vertices
+  "Given a hypergraph h and a set vv of vertices, remove the vertices from h
+  (i.e. remove all of the vertices of vv from each edge in h). If this would
+  result in an edge becoming empty, remove that edge entirely."
+  [h vv]
+  (loop [h h,
+         res {}]
+    (if (first h)
+      (let [edge (difference (second (first h))
+                             vv)]
+        (if (< 0 (count edge))
+          (recur (rest h)
+                 (assoc res (first (first h)) edge))
+          (recur (rest h)
+                 res)))
+      res)))
+
 ; Auxiliary functions
 ;
 ; These functions might be useful if you're working with hitting sets, although
@@ -79,10 +101,12 @@
 ;
 ; These are the functions that users are probably going to be interested in.
 
+; Hitting set
+
 (defn hitting-set?
   "Returns true if t is a hitting set of h. Does not check whether s is
   minimal."
-  [t h]
+  [h t]
   (not-any? empty? (map #(intersection % t)
                         (vals h))))
 
@@ -91,7 +115,7 @@
   caveat in README.md for odd behavior of this function."
   [h k]
   (cond
-    (< (vertices h) k) false
+    (< (count-vertices h) k) false
     (empty? h) true
     (zero? k) false
     :else (let [hvs (map #(dissoc-elements-containing % h)
@@ -116,7 +140,7 @@
   for odd behavior of this function. If the parameter k is passed then the
   function will return all hitting sets of size less than or equal to k."
   ([h]
-   (enumerate-algorithm (efficient-hypergraph h) (vertices h) #{}))
+   (enumerate-algorithm (efficient-hypergraph h) (count-vertices h) #{}))
   ([h k]
    (enumerate-algorithm (efficient-hypergraph h) k #{})))
 
@@ -127,4 +151,29 @@
   [h]
   (first (filter #(> (count %) 0)
                  (map #(enumerate-hitting-sets h %)
-                      (range 1 (inc (vertices h)))))))
+                      (range 1 (inc (count-vertices h)))))))
+
+; Set cover
+
+(defn cover?
+  "Returns true if the elements of s form a set cover for the hypergraph h."
+  [h s]
+  (= (apply union (vals h))
+     (apply union (map #(get h %) s))))
+
+(defn greedy-cover
+  "Returns a set cover of h using the 'greedy' algorithm."
+  [h]
+  (loop [hh h,
+         edges #{}]
+    (if (cover? h edges)
+      edges
+      (let [e (largest-edge hh)]
+        (recur (remove-vertices hh (get hh e))
+               (conj edges e))))))
+
+(defn approx-hitting-set
+  "Returns a hitting set of h. The set is guaranteed to be a hitting set, but
+  may not be minimal."
+  [h]
+  (greedy-cover (reverse-map h)))
