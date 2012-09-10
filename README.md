@@ -4,7 +4,7 @@ A Clojure library to find minimal hitting sets and set covers.
 
 ## What’s this?
 
-This library deals with two closely related problems in graph theory: the hitting set problem and the set cover problem. These are explained pretty well [by Wikipedia](https://secure.wikimedia.org/wikipedia/en/wiki/Set_cover_problem). To summarize, if we have a hypergraph *H* consisting of a set of vertices and a set of edges, then
+This library deals with two closely related problems in graph theory: the hitting set problem and the set cover problem. These are explained pretty well [by Wikipedia](http://en.wikipedia.org/wiki/Set_cover_problem). To summarize, if we have a hypergraph *H* consisting of a set of vertices and a set of edges, then
 
 * a *hitting set* of *H* is a set of vertices that has a nonempty intersection with each edge, and
 * a *set cover* of *H* is a set of edges which, taken together, contain all of the vertices of *H*.
@@ -96,23 +96,29 @@ Following are descriptions of the “end-user” functions in the library.
 
 ## Caveats
 
-* Due to limitations in the algorithms in this library, you may experience the following oddities:
-    1. `hitting-set-exists?` will correctly return `false` if you pass it a size `k` below that of the minimal hitting set, and it will correctly return `true` when you pass it a `k` that is equal to the size of the minimal hitting set. However, it may return `false` for larger values of `k`, even when the values are less than the number of vertices in the hypergraph. (Recall that if the minimal hitting set has size *a* and there are a total of *c* vertices in the hypergraph, then we can form a hitting set of any size *k* between *a* and *c*, inclusive, by adding elements to the minimal hitting set. The resulting set will still have the hitting set property that it has a nonempty intersection with each hyperedge, and so it will still be a hitting set.)
-    2. `enumerate-hitting-sets` has a similar problem: It will always (correctly) return all possible *minimal* hitting sets, but it may not return hitting sets that are larger than minimal.
-    I intend to fix both of these issues in a future version of the library. Note that if you’re only looking for *minimal* hitting sets then neither of these oddities is an issue.
+Due to limitations in the algorithms in this library, you may experience the following oddities:
 
-* The functions `hitting-set-exists?` and `enumerate-hitting-sets` (and by extension `minimal-hitting-sets`) are recursive but do not make use of Clojure’s `recur` and friends. This opens the possibility of a stack overflow. In practice, though, the recursion goes no deeper than `k` levels, where `k` is the maximum edge size. Since the hitting set problem is NP-complete, the computation for small edge sizes will take so long that you’ll give up (or run out of heap) long before the stack fills up.
+1. `hitting-set-exists?` will correctly return `false` if you pass it a size `k` below that of the minimal hitting set, and it will correctly return `true` when you pass it a `k` that is equal to the size of the minimal hitting set. However, it may return `false` for larger values of `k`, even when the values are less than the number of vertices in the hypergraph. (Recall that if the minimal hitting set has size *a* and there are a total of *c* vertices in the hypergraph, then we can form a hitting set of any size *k* between *a* and *c*, inclusive, by adding elements to the minimal hitting set. The resulting set will still have the hitting set property that it has a nonempty intersection with each hyperedge, and so it will still be a hitting set.)
+
+2. `enumerate-hitting-sets` has a similar problem: It will always (correctly) return all possible *minimal* hitting sets, but it may not return hitting sets that are larger than minimal.
+
+I intend to fix both of these issues in a future version of the library. Note that if you’re only looking for *minimal* hitting sets then neither of these oddities is an issue.
+
+### A note on recursion
+
+The functions `hitting-set-exists?` and `enumerate-hitting-sets` (and by extension `minimal-hitting-sets`) are recursive but do not make use of Clojure’s `recur` and friends. This opens the possibility of a stack overflow. In practice, though, the recursion goes no deeper than `k` levels, where `k` is the maximum edge size. Since the hitting set problem is NP-complete, the computation for small edge sizes will take so long that you’ll give up (or run out of heap) long before the stack fills up.
 
 ## Further reading
 
 * [An article (containing a hitting-set example) by the author of this library](http://www.bdesham.info/2012/09/olympic-colors)
 * [The first chapter of *Parameterized Complexity Theory* by J. Flum and M. Grohe](http://www2.informatik.hu-berlin.de/~grohe/pub/pkbuch-chap1.pdf), which contains a discussion of the hitting set (among other problems) and which provided the algorithms which were adapted for this library
+* Thanks go to [A.Schulz](http://cs.stackexchange.com/a/3281/2601), who pointed me in the right direction when I [asked this question](http://cs.stackexchange.com/q/3276/2601) on the Computer Science Stack Exchange
 
 ## History
 
 Version numbers are assigned to this project according to version 1.0.0 of the [Semantic Versioning](http://semver.org/) specification.
 
-* Version 0.9.0 (2012-09-09)
+* Version 0.9.0 (2012-09-10)
   - Added support for the set-cover formulation of the problem via `cover?` and `greedy-cover`
   - Used the new set-cover functions to implement `approx-hitting-set` to find approximate hitting sets
   - Modified `hitting-set?` so that the hypergraph is the first argument to every function in the library
