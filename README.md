@@ -110,22 +110,27 @@ The functions `hitting-set-exists?` and `enumerate-hitting-sets` (and by extensi
 
 ## Further reading
 
-* [An article (containing a hitting-set example) by the author of this library](http://www.bdesham.info/2012/09/olympic-colors)
+* [An article (containing a hitting-set example) by the author of this library](https://esham.io/2012/09/olympic-colors)
 * [The first chapter of *Parameterized Complexity Theory* by J. Flum and M. Grohe](http://www2.informatik.hu-berlin.de/~grohe/pub/pkbuch-chap1.pdf), which contains a discussion of the hitting set (among other problems) and which provided the algorithms which were adapted for this library
 * Thanks go to [A.Schulz](http://cs.stackexchange.com/a/3281/2601), who pointed me in the right direction when I [asked this question](http://cs.stackexchange.com/q/3276/2601) on the Computer Science Stack Exchange
 
-## History
+## Author
+
+This program was created by [Benjamin Esham](https://esham.io).
+
+This project is [hosted on GitHub](https://github.com/bdesham/hitting-set). Please feel free to submit pull requests.
+
+## Version history
 
 Version numbers are assigned to this project according to version 1.0.0 of the [Semantic Versioning](http://semver.org/) specification.
 
-* Version 0.9.0 (2012-09-10)
-  - Added support for the set-cover formulation of the problem via `cover?` and `greedy-cover`
-  - Used the new set-cover functions to implement `approx-hitting-set` to find approximate hitting sets
-  - Modified `hitting-set?` so that the hypergraph is the first argument to every function in the library
-* Version 0.8.0 (2012-09-05): Initial release.
+* 0.9.0 (2012-09-10)
+    - Added support for the set-cover formulation of the problem via `cover?` and `greedy-cover`
+    - Used the new set-cover functions to implement `approx-hitting-set` to find approximate hitting sets
+    - Modified `hitting-set?` so that the hypergraph is the first argument to every function in the library
+* 0.8.0 (2012-09-05)
+    - Initial release.
 
 ## License
 
-Copyright © 2012 Benjamin D. Esham (www.bdesham.info).
-
-This project is distributed under the Eclipse Public License, the same as that used by Clojure. A copy of the license is included as “epl-v10.html” in this distribution.
+Copyright © 2012 Benjamin D. Esham. This project is distributed under the Eclipse Public License, the same as that used by Clojure. A copy of the license is included as “epl-v10.html” in this distribution.
