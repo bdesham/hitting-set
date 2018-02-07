@@ -1,12 +1,7 @@
-/target
-/lib
-/classes
-/checkouts
+/target/
+
 pom.xml
-*.jar
-*.class
-.lein-deps-sum
+
 .lein-failures
-.lein-plugins
-.DS_Store
-.*.s??
+.lein-repl-history
+.nrepl-port
