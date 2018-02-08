@@ -1,112 +1,99 @@
 # hitting-set [![Build Status](https://travis-ci.org/bdesham/hitting-set.svg?branch=master)](https://travis-ci.org/bdesham/hitting-set)
 
-A Clojure library to find minimal hitting sets and set covers.
+A Clojure library to find hitting sets and set covers.
 
-## What’s this?
+## Installation
 
-This library deals with two closely related problems in graph theory: the hitting set problem and the set cover problem. These are explained pretty well [by Wikipedia](http://en.wikipedia.org/wiki/Set_cover_problem). To summarize, if we have a hypergraph *H* consisting of a set of vertices and a set of edges, then
+This library is available from [Clojars]. Just add
+
+    [hitting-set "1.0.0"]
+
+to your dependencies.
+
+[Clojars]: https://clojars.org/
+
+## Overview
+
+This library deals with two closely related problems in graph theory: the hitting set problem and the set cover problem. These are explained pretty well [by Wikipedia][Wikipedia]. To summarize, if we have a hypergraph *H* consisting of a set of vertices and a set of edges, then
 
 * a *hitting set* of *H* is a set of vertices that has a nonempty intersection with each edge, and
 * a *set cover* of *H* is a set of edges which, taken together, contain all of the vertices of *H*.
 
-Usually people are interested in the hitting set or set cover of minimum possible cardinality: the *minimal hitting set* or *minimal set cover*.
+This library is mostly concerned with the hitting-set formulation. If you’re interested in working with set covers you may be able to call `invert` on your hypergraph and then use the hitting-set functions to obtain your results.
 
----
+People are generally interested in finding the *minimum* hitting sets, i.e. those with the minimum possible cardinality. It is possible for there to exist multiple hitting sets of that minimum cardinality.
 
-Before we go into the relationship between these two problems let’s talk about how to express a hypergraph in Clojure. For this library we’ll use a hash map where the keys are the edge names and the values are sets containing the vertex names. Suppose we construct a hypergraph where the vertices are colors and the edges are national flags—a color vertex is a member of a flag edge if and only if that color is used on that flag. Here’s a truncated example:
+There is also a function to find *minimal* hitting sets. A minimal hitting set has the property that if any element is removed from it then it is no longer a hitting set. A hitting set can be minimal without being minimum, but every minimum hitting set is necessarily minimal.
 
-```clj
-{"Australia" #{:white :red :blue},
- "Tanzania" #{:black :blue :green :yellow},
- "Norway" #{:white :red :blue},
- "Uruguay" #{:white :blue :yellow},
- "Saint Vincent and the Grenadines" #{:blue :green :yellow},
- "Ivory Coast" #{:white :orange :green},
- "Sierra Leone" #{:white :blue :green},
- "United States" #{:white :red :blue}}
-```
+[Wikipedia]: https://en.wikipedia.org/wiki/Set_cover_problem
 
-Here I have used strings for the keys and keywords for the elements of the sets, but you can use strings, keywords, or pretty much any other non-sequence data type for the edges or for the vertices. (Using a separate data type for the two may make things easier if you’re going to be inverting (q.v.) your graphs a lot.)
+## Data structures
 
----
+This library uses two different data structures to represent hypergraphs:
 
-Hopefully this example has made our hypergraphs a little easier to visualize. Now let’s talk about *inverting* hypergraphs. By this I mean that instead of mapping edge names to sets of vertex names, we’ll map vertex names to the set of names of the edges in which those vertices are contained:
+* A **labeled hypergraph** is one in which each edge has a name. It is represented by a map. Each key–value pair is an edge; the key is the edge name and the value is a set of vertices. For example, this hypergraph contains two edges and five vertices:
 
-```clj
-{:black #{"Tanzania"},
- :white #{"Australia" "Norway" "Uruguay" "Ivory Coast"
-   "Sierra Leone" "United States"},
- :orange #{"Ivory Coast"},
- :red #{"Australia" "Norway" "United States"},
- :blue #{"Australia" "Tanzania" "Norway" "Uruguay" "United States"
-   "Saint Vincent and the Grenadines" "Sierra Leone"},
- :green #{"Tanzania" "Saint Vincent and the Grenadines"
-   "Ivory Coast" "Sierra Leone"},
- :yellow #{"Tanzania" "Uruguay" "Saint Vincent and the Grenadines"}}
-```
+      {:germany #{:black :red :yellow}
+       :united-states #{:blue :red :white}}
 
-Note that what we have done is to convert a hypergraph into another bona fide hypergraph that contains the same information in a different form. The relationship between the hitting set and the set cover is that the hitting set of the first hypergraph above is a set cover for the second set, and vice versa. Inverting a hypergraph is easy and fast, so depending upon the situation, finding the hitting set may be easiest by inverting the hypergraph and then finding the set cover.
+* An **unlabeled hypergraph** is one in which the edges are not named. It is represented by a set of sets. Each set is an edge and each value in the set is a vertex. This hypergraph is equivalent to the one in the previous example:
 
-## Usage
+      #{#{:black :red :yellow}
+        #{:blue :red :white}}
 
-The `project.clj` specifies a minimum Leiningen version of 2.0.0, although there probably isn’t anything in this library that actually requires that version.
+You can easily convert a labeled hypergraph to an unlabeled one by passing it through the built-in `vals` and `set` functions, in that order. The function `unlabel` is provided to do this for you.
 
-1. Add `[hitting-set "0.9.0"]` to the `:dependencies` vector in your `project.clj`.
-2. `(:use hitting-set :only [minimal-hitting-sets])`, or whichever of the functions below you need.
+The functions in the library don’t care whether the vertex values and edge names are strings, keywords, numbers, UUIDs, etc., but the automated tests use keywords exclusively.
 
-Following are descriptions of the “end-user” functions in the library.
+## API
 
 ### Utility functions
 
-* `reverse-map [h]`
+* `(invert h)`
 
-    “Inverts” the hypergraph `h` in the sense shown in the example above.
+    Given a labeled hypergraph (i.e. a map from edge names to sets of vertices), “inverts” it by returning a map from vertices to the sets of the edges in which those vertices appeared.
+
+* `(unlabel h)`
+
+    Given a labeled hypergraph, returns the equivalent unlabeled hypergraph.
 
 ### Hitting set
 
-* `hitting-set? [h s]`
+* `(hitting-set? h t)`
 
-    Returns true if `s` is a hitting set for `h` (i.e. if `s` has a nonempty intersection with each edge in `h`). This function does not check to ensure that `s` is of minimal size.
+    Returns true if `t` is a hitting set of the unlabeled hypergraph `h`.
 
-* `hitting-set-exists? [h k]`
+* `(enumerate-hitting-sets h)`
 
-    Returns true if a hitting set of size `k` exists for the hypergraph `h`. See the caveat below.
+  `(enumerate-hitting-sets h k)`
 
-* `enumerate-hitting-sets [h] [h k]`
+    Returns a set containing all of the minimal hitting sets, and possibly some non-minimal hitting sets, of the unlabeled hypergraph `h`. If `k` is passed then only sets with cardinality `k` or smaller will be returned.
 
-    Returns a set containing the minimal hitting sets of `h` and possibly (but not necessarily! see the caveat below) some *non*-minimal hitting sets. If `k` is passed then only sets of size `k` or smaller will be returned; if `k` is not included then sets will be returned without regard to their size.
+* `(minimum-hitting-sets h)`
 
-* `minimal-hitting-sets [h]`
+    Returns a set containing the minimum hitting sets of the unlabeled hypergraph `h`.
 
-    Returns a set containing the minimal hitting sets of `h`. For example, if the minimal possible hitting set has size two and there are three hitting sets of size two, all three will be returned. If you want just one hitting set and don’t care about uniqueness, use `(first (minimal-hitting-sets h))`.
+* `(minimal-hitting-sets h)`
 
-* `approx-hitting-set [h]`
+    Returns a set containing the minimal hitting sets of the unlabeled hypergraph `h`.
 
-    Returns a hitting set of `h` generated by inverting `h` and using the greedy cover algorithm on it. The returned set is guaranteed to be a hitting set, but it is not guaranteed to be minimal.
+* `(approx-hitting-set h)`
+
+    Returns a hitting set of the unlabeled hypergraph `h` generated by inverting `h` and using the greedy cover algorithm on it. The returned set is guaranteed to be a hitting set, but it is not guaranteed to have the minimum possible cardinality.
 
 ### Set cover
 
-* `cover? [h s]`
+* `(cover? h s)`
 
-    Returns true if the set `s` is a cover for `h`.
+    Returns true if the set `s` is a cover for the labeled hypergraph `h`.
 
-* `greedy-cover [h]`
+* `(greedy-cover h)`
 
-    Uses the “greedy” algorithm (described [at Wikipedia](http://en.wikipedia.org/wiki/Set_cover_problem#Greedy_algorithm)) to generate a set cover for `h`. The cover returned is not necessarily minimal.
+    Uses the “greedy” algorithm (described [at Wikipedia](https://en.wikipedia.org/wiki/Set_cover_problem#Greedy_algorithm)) to generate a set cover for the labeled hypergraph `h`. The set cover does not necessarily have the minimum possible cardinality.
 
-## Caveats
+## A note on recursion
 
-Due to limitations in the algorithms in this library, you may experience the following oddities:
-
-1. `hitting-set-exists?` will correctly return `false` if you pass it a size `k` below that of the minimal hitting set, and it will correctly return `true` when you pass it a `k` that is equal to the size of the minimal hitting set. However, it may return `false` for larger values of `k`, even when the values are less than the number of vertices in the hypergraph. (Recall that if the minimal hitting set has size *a* and there are a total of *c* vertices in the hypergraph, then we can form a hitting set of any size *k* between *a* and *c*, inclusive, by adding elements to the minimal hitting set. The resulting set will still have the hitting set property that it has a nonempty intersection with each hyperedge, and so it will still be a hitting set.)
-
-2. `enumerate-hitting-sets` has a similar problem: It will always (correctly) return all possible *minimal* hitting sets, but it may not return hitting sets that are larger than minimal.
-
-I intend to fix both of these issues in a future version of the library. Note that if you’re only looking for *minimal* hitting sets then neither of these oddities is an issue.
-
-### A note on recursion
-
-The functions `hitting-set-exists?` and `enumerate-hitting-sets` (and by extension `minimal-hitting-sets`) are recursive but do not make use of Clojure’s `recur` and friends. This opens the possibility of a stack overflow. In practice, though, the recursion goes no deeper than `k` levels, where `k` is the maximum edge size. Since the hitting set problem is NP-complete, the computation for small edge sizes will take so long that you’ll give up (or run out of heap) long before the stack fills up.
+The functions `enumerate-hitting-sets`, `minimum-hitting-sets`, and `minimal-hitting-sets` are recursive but do not make use of Clojure’s tail recursion. This opens the possibility of a stack overflow. However, the recursion goes no deeper than `k` levels, where `k` is the number of vertices in the largest edge. Since the hitting set problem is NP-complete, the computation for small edge sizes will take so long that in practice you will give up (or run out of heap) long before the stack fills up.
 
 ## Further reading
 

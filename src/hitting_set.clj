@@ -1,16 +1,12 @@
 (ns hitting-set
-  (:require [clojure.set :refer [difference intersection union]]))
+  (:require [clojure.set :refer [difference intersection subset? union]]))
 
-; Utility functions
+; Private utility functions
 
 (defn- dissoc-elements-containing
-  "Given a map in which the keys are sets, removes all keys whose sets contain
-  the element el. Adapted from http://stackoverflow.com/a/2753997/371228"
+  "Given a seq of sets, removes all items that contain the element el."
   [el m]
-  (apply dissoc m (keep #(-> % val
-                           (not-any? #{el})
-                           (if nil (key %)))
-                        m)))
+  (remove #(contains? % el) m))
 
 (defn- map-old-new
   "Returns a sequence of vectors. Each first item is an element of coll and the
@@ -19,51 +15,34 @@
   (map #(vector % (f %)) coll))
 
 (defn- count-vertices
-  "Returns the number of vertices in the hypergraph h."
+  "Returns the number of vertices in the unlabeled hypergraph h."
   [h]
-  (count (apply union (vals h))))
+  (count (apply union h)))
 
 (defn- sorted-hypergraph
-  "Returns a version of the hypergraph h that is sorted so that the edges with
-  the fewest vertices come first."
+  "Returns a version of the unlabeled hypergraph h that is sorted so that the
+  edges with the fewest vertices come first."
   [h]
-  (into (sorted-map-by (fn [key1 key2]
-                         (compare [(count (get h key1)) key1]
-                                  [(count (get h key2)) key2])))
-        h))
-
-(defn- remove-dupes
-  "Given a map m, remove all but one of the keys that map to any given value."
-  [m]
-  (loop [sm (sorted-map)
-         m m
-         seen #{}]
-    (if-let [head (first m)]
-      (if (contains? seen (second head))
-        (recur sm
-               (rest m)
-               seen)
-        (recur (assoc sm (first head) (second head))
-               (rest m)
-               (conj seen (second head))))
-      sm)))
+  (sort-by count h))
 
 (defn- efficient-hypergraph
-  "Given a hypergraph h, returns an equivalent hypergraph that will go through
-  the hitting set algorithm more quickly. Specifically, redundant edges are
-  discarded and then the map is sorted so that the smallest edges come first."
+  "Given an unlabeled hypergraph h, returns an equivalent hypergraph that will
+  go through the hitting set algorithm more quickly. Specifically, redundant
+  edges are discarded and then the hypergraph is sorted so that the smallest
+  edges come first."
   [h]
-  (-> h remove-dupes sorted-hypergraph))
+  (-> h set sorted-hypergraph))
 
 (defn- largest-edge
-  "Returns the name of the edge of h that has the greatest number of vertices."
+  "Returns the name of the edge of the labeled hypergraph h that has the
+  greatest number of vertices."
   [h]
   (first (last (sorted-hypergraph h))))
 
 (defn- remove-vertices
-  "Given a hypergraph h and a set vv of vertices, remove the vertices from h
-  (i.e. remove all of the vertices of vv from each edge in h). If this would
-  result in an edge becoming empty, remove that edge entirely."
+  "Given a labeled hypergraph h and a set vv of vertices, remove the vertices
+  from h (i.e. remove all of the vertices of vv from each edge in h). If this
+  would result in an edge becoming empty, remove that edge entirely."
   [h vv]
   (loop [h h
          res {}]
@@ -77,7 +56,16 @@
                  res)))
       res)))
 
-(defn- reverse-map
+(defn- label
+  "Given an unlabeled hypergraph h, convert it to a labeled hypergraph by
+  assigning a dummy name to each edge."
+  [h]
+  (apply hash-map (interleave (iterate inc 0)
+                              h)))
+
+; Public utility functions
+
+(defn invert
   "Takes a map from keys to sets of values. Produces a map in which the values
   are mapped to the set of keys in whose sets they originally appeared."
   [m]
@@ -86,31 +74,19 @@
            (apply hash-map (flatten (for [v vs]
                                       [v #{k}]))))))
 
-; The main functions
-;
-; These are the functions that users are probably going to be interested in.
+(defn unlabel
+  "Takes a labeled hypergraph and returns the equivalent unlabeled hypergraph."
+  [h]
+  (set (vals h)))
 
 ; Hitting set
 
 (defn hitting-set?
-  "Returns true if t is a hitting set of h. Does not check whether s is
-  minimal."
+  "Returns true if t is a hitting set of the unlabeled hypergraph h. Does not
+  check whether t is minimal or whether it has the minimum possible cardinality
+  for a hitting set of h."
   [h t]
-  (not-any? empty? (map #(intersection % t)
-                        (vals h))))
-
-(defn hitting-set-exists?
-  "Returns true if a hitting set of size k exists for the hypergraph h. See the
-  caveat in README.md for odd behavior of this function."
-  [h k]
-  (cond
-    (< (count-vertices h) k) false
-    (empty? h) true
-    (zero? k) false
-    :else (let [hvs (map #(dissoc-elements-containing % h)
-                         (first (vals h)))]
-            (boolean (some #(hitting-set-exists? % (dec k))
-                           hvs)))))
+  (not-any? empty? (map #(intersection % t) h)))
 
 (defn- enumerate-algorithm
   [h k x]
@@ -118,40 +94,62 @@
      (empty? h) #{x}
      (zero? k) #{}
      :else (let [hvs (map-old-new #(dissoc-elements-containing % h)
-                                  (first (vals h)))]
+                                  (first h))]
              (apply union (map #(enumerate-algorithm (second %)
                                                      (dec k)
                                                      (union x #{(first %)}))
                                hvs)))))
 
 (defn enumerate-hitting-sets
-  "Return a set containing the hitting sets of h. See the caveat in README.md
-  for odd behavior of this function. If the parameter k is passed then the
-  function will return all hitting sets of size less than or equal to k."
+  "Returns a set containing all of the minimal hitting sets, and possibly some
+  non-minimal hitting sets, of the unlabeled hypergraph h.
+
+  If k is passed then only sets with cardinality k or smaller will be
+  returned."
   ([h]
    (enumerate-algorithm (efficient-hypergraph h) (count-vertices h) #{}))
   ([h k]
    (enumerate-algorithm (efficient-hypergraph h) k #{})))
 
-(defn minimal-hitting-sets
-  "Returns a set containing the minimal hitting sets of the hypergraph h. If
-  you just want one hitting set and don't care whether there are multiple
-  minimal hitting sets, use (first (minimal-hitting-sets h))."
+(defn minimum-hitting-sets
+  "Returns a set containing the minimum hitting sets of the unlabeled
+  hypergraph h."
   [h]
-  (first (filter #(> (count %) 0)
+  (first (filter seq
                  (map #(enumerate-hitting-sets h %)
                       (range 1 (inc (count-vertices h)))))))
+
+(defn minimal-hitting-sets
+  "Returns a set containing the minimal hitting sets of the unlabeled
+  hypergraph h."
+  [h]
+  (let [hitting-sets (enumerate-hitting-sets h)]
+    (set (filter
+           (fn [hs]
+             (let [others (disj hitting-sets hs)]
+               (not-any? #(subset? % hs) others)))
+           hitting-sets))))
+
+(declare greedy-cover)
+
+(defn approx-hitting-set
+  "Returns a hitting set of the unlabeled hypergraph h. The hitting set is not
+  guaranteed to be minimum or minimal."
+  [h]
+  (greedy-cover (invert (label h))))
 
 ; Set cover
 
 (defn cover?
-  "Returns true if the elements of s form a set cover for the hypergraph h."
+  "Returns true if the elements of s form a set cover for the labeled
+  hypergraph h."
   [h s]
   (= (apply union (vals h))
      (apply union (map #(get h %) s))))
 
 (defn greedy-cover
-  "Returns a set cover of h using the 'greedy' algorithm."
+  "Returns a set cover of the labeled hypergraph h using the \"greedy\"
+  algorithm."
   [h]
   (loop [hh h
          edges #{}]
@@ -160,9 +158,3 @@
       (let [e (largest-edge hh)]
         (recur (remove-vertices hh (get hh e))
                (conj edges e))))))
-
-(defn approx-hitting-set
-  "Returns a hitting set of h. The set is guaranteed to be a hitting set, but
-  may not be minimal."
-  [h]
-  (greedy-cover (reverse-map h)))
