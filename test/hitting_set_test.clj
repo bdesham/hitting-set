@@ -10,15 +10,17 @@
 
 (refer-private 'hitting-set)
 
-(deftest utility-functions
+(deftest test-count-vertices
   (let [a {:key1 #{:g :r :f :j} :key2 #{:a :b :j :g} :key3 #{:r}}
         b #{:a :b :c :d :e}
         flags {:usa #{:red :white :blue}
                :germany #{:black :red :yellow}
                :sweden #{:blue :yellow}}]
     (is (= (count-vertices a) 6))
-    (is (= (count-vertices flags) 5))
+    (is (= (count-vertices flags) 5))))
 
+(deftest test-reverse-map
+  (let [a {:key1 #{:g :r :f :j} :key2 #{:a :b :j :g} :key3 #{:r}}]
     (is (= (reverse-map a)
            {:r #{:key3 :key1}
             :a #{:key2}
