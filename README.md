@@ -1,4 +1,4 @@
-# hitting-set
+# hitting-set [![Build Status](https://travis-ci.org/bdesham/hitting-set.svg?branch=master)](https://travis-ci.org/bdesham/hitting-set)
 
 A Clojure library to find minimal hitting sets and set covers.
 
