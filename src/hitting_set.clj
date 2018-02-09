@@ -1,5 +1,5 @@
 (ns hitting-set
-  (:use [clojure.set :only [difference intersection union]]))
+  (:require [clojure.set :refer [difference intersection union]]))
 
 ; Utility functions
 
@@ -35,8 +35,8 @@
 (defn- remove-dupes
   "Given a map m, remove all but one of the keys that map to any given value."
   [m]
-  (loop [sm (sorted-map),
-         m m,
+  (loop [sm (sorted-map)
+         m m
          seen #{}]
     (if-let [head (first m)]
       (if (contains? seen (second head))
@@ -65,7 +65,7 @@
   (i.e. remove all of the vertices of vv from each edge in h). If this would
   result in an edge becoming empty, remove that edge entirely."
   [h vv]
-  (loop [h h,
+  (loop [h h
          res {}]
     (if (first h)
       (let [edge (difference (second (first h))
@@ -164,7 +164,7 @@
 (defn greedy-cover
   "Returns a set cover of h using the 'greedy' algorithm."
   [h]
-  (loop [hh h,
+  (loop [hh h
          edges #{}]
     (if (cover? h edges)
       edges
