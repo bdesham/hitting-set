@@ -26,13 +26,7 @@
             :f #{:key1}
             :g #{:key2 :key1}
             :j #{:key2 :key1}}))
-    (is (= a (reverse-map (reverse-map a))))
-
-    (is (= b (apply union (drop-elements b))))
-    (is (= (count b) (count (drop-elements b))))
-    (is (= (drop-elements b)
-           #{#{:a :c :b :d} #{:a :c :b :e} #{:a :c :d :e}
-             #{:a :b :d :e} #{:c :b :d :e}}))))
+    (is (= a (reverse-map (reverse-map a))))))
 
 (deftest hitting-set-generic
   (let [a {:key1 #{:g :r :f :j}

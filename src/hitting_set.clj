@@ -77,12 +77,7 @@
                  res)))
       res)))
 
-; Auxiliary functions
-;
-; These functions might be useful if you're working with hitting sets, although
-; they're not actually invoked anywhere else in this project.
-
-(defn reverse-map
+(defn- reverse-map
   "Takes a map from keys to sets of values. Produces a map in which the values
   are mapped to the set of keys in whose sets they originally appeared."
   [m]
@@ -90,12 +85,6 @@
          (for [[k vs] m]
            (apply hash-map (flatten (for [v vs]
                                       [v #{k}]))))))
-
-(defn drop-elements
-  "Given a set of N elements, return a set of N sets, each of which is the
-  result of removing a different item from the original set."
-  [s]
-  (set (for [e s] (difference s #{e}))))
 
 ; The main functions
 ;
