@@ -1,5 +1,4 @@
 (ns hitting-set-test
-  (:require [clojure.set :refer [union]])
   (:use clojure.test
         hitting-set))
 
