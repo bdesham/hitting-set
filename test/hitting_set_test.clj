@@ -56,6 +56,18 @@
     (is (= (unlabel a) unlabeled-a))
     (is (= (unlabel flags) unlabeled-flags))))
 
+(deftest one-element
+  (let [graph #{#{:a}}]
+
+    (is (false? (hitting-set? graph #{})))
+    (is (hitting-set? graph #{:a}))
+
+    (is (= (minimum-hitting-sets graph)
+           #{#{:a}}))
+
+    (is (= (minimal-hitting-sets graph)
+           #{#{:a}}))))
+
 (deftest hitting-set-generic
   (let [graph #{#{:g :r :f :j}
                 #{:a :b :j :g}
@@ -97,6 +109,7 @@
     (is (hitting-set? graph #{:lime :pear}))
     (is (hitting-set? graph #{:apricot :apple}))
     (is (hitting-set? graph #{:apricot :pear}))
+    (is (false? (hitting-set? graph #{})))
     (is (false? (hitting-set? graph #{:apricot})))
     (is (false? (hitting-set? graph #{:apple})))
     (is (false? (hitting-set? graph #{:apple :pear})))
@@ -124,6 +137,11 @@
     (is (hitting-set? graph #{:red :yellow}))
     (is (hitting-set? graph #{:blue :black}))
     (is (hitting-set? graph #{:blue :yellow}))
+    (is (false? (hitting-set? graph #{})))
+    (is (false? (hitting-set? graph #{:black})))
+    (is (false? (hitting-set? graph #{:red})))
+    (is (false? (hitting-set? graph #{:white})))
+    (is (false? (hitting-set? graph #{:yellow})))
     (is (false? (hitting-set? graph #{:red :white})))
     (is (false? (hitting-set? graph #{:red :black})))
 
