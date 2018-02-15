@@ -107,6 +107,8 @@ This program was created by [Benjamin Esham](https://esham.io).
 
 This project is [hosted on GitHub](https://github.com/bdesham/hitting-set). Please feel free to submit pull requests.
 
+All of the nontrivial algorithms in this library were adapted from *Parameterized Complexity Theory* by J. Flum and M. Grohe (see “further reading” above).
+
 ## Version history
 
 Version numbers are assigned to this project according to version 1.0.0 of the [Semantic Versioning](http://semver.org/) specification.
