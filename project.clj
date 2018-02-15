@@ -1,4 +1,4 @@
-(defproject hitting-set "0.9.0"
+(defproject hitting-set "1.0.0"
             :description "Find minimal hitting sets"
             :url "https://github.com/bdesham/hitting-set"
             :license {:name "Eclipse Public License"

@@ -111,13 +111,22 @@ This project is [hosted on GitHub](https://github.com/bdesham/hitting-set). Plea
 
 Version numbers are assigned to this project according to version 1.0.0 of the [Semantic Versioning](http://semver.org/) specification.
 
+* 1.0.0 (2018-02-14)
+    - **Breaking:** Modified the functions `hitting-set?`, `enumerate-hitting-sets`, and `approx-hitting-set` to accept unlabeled hypergraphs (see above) instead of labeled hypergraphs.
+    - **Breaking:** Renamed `minimal-hitting-sets` to `minimum-hitting-sets` and rewrote it to expect an unlabeled hypergraph. Added a new function called `minimal-hitting-sets` (thanks [7enderhead](https://github.com/7enderhead)!).
+    - **Breaking:** Removed the function `hitting-set-exists?`, the behavior of which was too inscrutable to justify its continued inclusion.
+    - **Breaking:** Renamed the `reverse-map` function to `invert`.
+    - Added an `unlabel` function to convert a labeled hypergraph to an unlabeled one.
+    - Added many more tests.
+
 * 0.9.0 (2012-09-10)
     - Added support for the set-cover formulation of the problem via `cover?` and `greedy-cover`
     - Used the new set-cover functions to implement `approx-hitting-set` to find approximate hitting sets
     - Modified `hitting-set?` so that the hypergraph is the first argument to every function in the library
+
 * 0.8.0 (2012-09-05)
     - Initial release.
 
 ## License
 
-Copyright © 2012 Benjamin D. Esham. This project is distributed under the Eclipse Public License, the same as that used by Clojure. A copy of the license is included as “epl-v10.html” in this distribution.
+Copyright © 2012, 2018 Benjamin D. Esham. This project is distributed under the Eclipse Public License, the same as that used by Clojure. A copy of the license is included as “epl-v10.html” in this distribution.
