@@ -2,6 +2,8 @@
 
 A Clojure library to find hitting sets and set covers.
 
+⚠️ **Notice:** This library is no longer maintained. It may have severe security or compatibility problems. Use it at your own risk!
+
 ## Installation
 
 This library is available from [Clojars]. Just add
@@ -98,14 +100,14 @@ The functions `enumerate-hitting-sets`, `minimum-hitting-sets`, and `minimal-hit
 ## Further reading
 
 * [An article (containing a hitting-set example) by the author of this library](https://esham.io/2012/09/olympic-colors)
-* [The first chapter of *Parameterized Complexity Theory* by J. Flum and M. Grohe](http://lii.rwth-aachen.de/images/Mitarbeiter/pub/grohe/pkbuch-chap1.pdf), which contains a discussion of the hitting set (among other problems) and which provided the algorithms which were adapted for this library
+* [The first chapter of *Parameterized Complexity Theory* by J. Flum and M. Grohe](https://esham.io/files/2012/09/olympic-colors/pkbuch-chap1.pdf), which contains a discussion of the hitting set (among other problems) and which provided the algorithms which were adapted for this library
 * Thanks go to [A.Schulz](http://cs.stackexchange.com/a/3281/2601), who pointed me in the right direction when I [asked this question](http://cs.stackexchange.com/q/3276/2601) on the Computer Science Stack Exchange
 
 ## Author
 
-This program was created by [Benjamin Esham](https://esham.io).
+This library was created by [Benjamin Esham](https://esham.io).
 
-This project is [hosted on GitHub](https://github.com/bdesham/hitting-set). Please feel free to submit pull requests.
+This project is [hosted on GitHub](https://github.com/bdesham/hitting-set). It is **no longer being developed** and is left on GitHub only in the hope that someone will find the code interesting or useful.
 
 All of the nontrivial algorithms in this library were adapted from *Parameterized Complexity Theory* by J. Flum and M. Grohe (see “further reading” above).
 
